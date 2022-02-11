@@ -1,0 +1,90 @@
+#SIMULATION ONE (unlimited)
+
+set.seed(1)
+martingale <- function(x){
+  results <- x
+  bet <- c(1, rep(NA, length(results)))
+  bank <- rep(0, length(results))
+  outcome <- vector()
+  for (i in 1:length(results)){
+    if (results[i] == -1){
+      bet[i+1] <- 2*bet[i]
+      bank[i] <- bank[i] - bet[i]
+    } else {
+      bet[i+1] <- bet[1]
+      bank[i] <- bank[i] + bet[i]
+    } 
+  }
+  outcome <- cbind(bet = bet[-length(bet)], results, bank, cms = cumsum(bank))
+  return(outcome)
+}
+
+sim <- replicate(10000, martingale(sample(c(-1, 1), 100, T, c(19/37, 18/37))))
+
+
+plot(1, type="n", xlab="n of bet", ylab="bank", xlim=c(1, 100), ylim=c(-1000, 50),
+     main="Figure 1: Simulated 10 plays")
+apply(sim[,,c(1:10)][,4,], 2, lines, col = rgb(1, 0, 0, 0.3))
+
+plot(1, type="n", xlab="n of bet", ylab="bank", xlim=c(1, 100), ylim=c(-1000, 50),
+     main="Figure 2: Simulated 100 plays")
+apply(sim[,,c(1:100)][,4,], 2, lines, col = rgb(1, 0, 0, 0.3))
+
+plot(1, type="n", xlab="n of bet", ylab="bank", xlim=c(1, 100), ylim=c(-1000, 50),
+     main="Figure 3: Simulated 1000 plays")
+apply(sim[,,c(1:1000)][,4,], 2, lines, col = rgb(1, 0, 0, 0.3))
+
+plot(1, type="n", xlab="n of bet", ylab="bank", xlim=c(1, 100), ylim=c(-1000, 50),
+     main="Figure 4: Simulated 10000 plays")
+apply(sim[,4,], 2, lines, col = rgb(1, 0, 0, 0.3))
+
+# plot(as.vector(sim[,4,]), type = 'l')
+
+sim[,2,] |> table() |> prop.table()
+log(sim[,1,], base = 2) |> table() 
+log(sim[,1,], base = 2) |> table() |> prop.table()
+sim[,1,]|> table() 
+
+
+
+
+
+#SIMULATION TWO (practical)
+set.seed(2022)
+mart5 <- function(x, c, g){
+  budget <- x
+  bet <- c
+  goal <- g
+  i <- 1
+  while((budget > bet) & (budget < goal)){
+    outcome <- sample(c(-1, 1), 1, T, c(19/37, 18/37))
+    if (outcome == 1){
+      budget <- budget + bet
+      bet <- c
+    }else{
+      budget <- budget - bet
+      bet <- bet*2
+    }
+    i <- i+1
+  }
+  
+  return(c(budget = budget, bet = bet, i = i))
+}
+
+sim <- replicate(10000, mart5(100, 1, 200))
+sim |> apply(1, mean)
+sim[1,] |> sum()
+
+
+sim[,1:10] |> apply(1, mean)
+sim[,11:110] |> apply(1, mean)
+sim[,111:1110] |> apply(1, mean)
+sim[,1111:10000] |> apply(1, mean)
+sim |> apply(1, mean)
+
+
+
+
+
+
+
